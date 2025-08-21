@@ -41,7 +41,7 @@ import os
 import pandas as pd
 
 # 定义目录路径
-directory = r'E:\anaFiles\smrBrainEye\cataract&glaucoma'
+directory = r'E:\anaFiles\smrBrainEye\cataractGlaucoma'
 
 def filter_smr_files(directory):
     """
@@ -123,7 +123,7 @@ def select_smr_files(directory):
     for filename in os.listdir(directory):
         if filename.endswith('_fdr_corrected_filter.smr'):
             # 用 -Heart_ 分割文件名
-            parts = filename.split('-Heart_')
+            parts = filename.split('-Brain_')
             if len(parts) == 2:
                 id_ = parts[0]
                 # 如果 id 不在字典中，初始化一个空列表
@@ -155,7 +155,9 @@ def select_smr_files(directory):
         # 如果有文件成功读取到 Gene 列
         if gene_sets:
             # 求所有集合的交集，得到该 id 组中所有文件共同的 Gene
-            common_genes = set.intersection(*gene_sets)
+            #common_genes = set.intersection(*gene_sets)
+            #交集比较少时取并集
+            common_genes = set.union(*gene_sets)
             # 将共同基因添加到最终结果数据中，以 id 作为列名
             final_data[id_] = pd.Series(sorted(common_genes))
         else:
@@ -178,7 +180,7 @@ def select_smr_files_txt(directory):
     for filename in os.listdir(directory):
         if filename.endswith('_fdr_corrected_filter.smr'):
             # 用 -Heart_ 分割文件名
-            parts = filename.split('-Heart_')
+            parts = filename.split('-Brain_')
             if len(parts) == 2:
                 id_ = parts[0]
                 # 如果 id 不在字典中，初始化一个空列表
@@ -210,7 +212,9 @@ def select_smr_files_txt(directory):
         # 如果有文件成功读取到 Gene 列
         if gene_sets:
             # 求所有集合的交集，得到该 id 组中所有文件共同的 Gene
-            common_genes = set.intersection(*gene_sets)
+            #common_genes = set.intersection(*gene_sets)
+            common_genes = set.union(*gene_sets)
+
             # 将共同基因添加到所有共同基因集合中
             all_common_genes.update(common_genes)
         else:
@@ -225,9 +229,9 @@ def select_smr_files_txt(directory):
 
 if __name__ == "__main__":
 
-    process_all_smr_files(directory)
-    filter_smr_files(directory)
-    merge_smr_files(directory)
+    #process_all_smr_files(directory)
+    #filter_smr_files(directory)
+    #merge_smr_files(directory)
 
     select_smr_files(directory)
     select_smr_files_txt(directory)

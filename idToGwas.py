@@ -3,7 +3,7 @@ import urllib.request
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
-
+from openpyxl import Workbook  # 引入Excel处理库
 
 def getInfomation(id):
     url = 'https://gwas.mrcieu.ac.uk/datasets/' + id + '/'
@@ -42,18 +42,23 @@ def getInfomation(id):
         if temp.text == "Consortium":
             consortium = temp.findNext("td").text
             continue
-    result = [population, sample_size, nsp, year, pmid, consortium]
+    trait = soup.find_all('h1')[0].text
+    result = [id, trait, population, sample_size, nsp, year, pmid, consortium]
     return result
-
 
 def process_file(filename, input_dir, output_base_dir):
     input_file_path = os.path.join(input_dir, filename)
-    output_file_path = os.path.join(output_base_dir, filename)
+    # 更改输出文件扩展名为.xlsx
+    output_filename = os.path.splitext(filename)[0] + '.xlsx'
+    output_file_path = os.path.join(output_base_dir, output_filename)
 
-    with open(input_file_path, 'r', encoding='utf-8') as infile, open(output_file_path, 'w',
-                                                                      encoding='utf-8') as outfile:
-        # 写入表头
-        outfile.write('Population\tSample size\tNumber of SNPs\tYear\tPMID\tConsortium\n')
+    # 创建Excel工作簿和工作表
+    wb = Workbook()
+    ws = wb.active
+    # 设置表头
+    ws.append(['Id', 'Trait', 'Population', 'Sample size', 'Number of SNPs', 'Year', 'PMID', 'Consortium'])
+
+    with open(input_file_path, 'r', encoding='utf-8') as infile:
         lines = infile.readlines()
         for line in tqdm(lines, desc=f"Processing {filename}", unit="lines"):
             parts = line.strip().split(':')
@@ -62,12 +67,15 @@ def process_file(filename, input_dir, output_base_dir):
             else:
                 id = parts[0]
             gwas_info = getInfomation(id)
-            outfile.write('\t'.join(gwas_info) + '\n')
+            ws.append(gwas_info)  # 直接添加一行数据
 
+    # 保存Excel文件
+    wb.save(output_file_path)
+    print(f"已保存Excel文件: {output_file_path}")
 
 # 定义目录
-input_dir = r'D:\document\bioInfo\heart-sarco-0330\outcome'
-output_base_dir = os.path.join(input_dir, 'gwasinfo')
+input_dir = r'D:\document\bioInfo\gwasID\covid'
+output_base_dir = os.path.join(input_dir, 'gwasinfo_xlsx')  # 更改输出目录名
 
 # 创建输出目录
 if not os.path.exists(output_base_dir):
@@ -78,5 +86,5 @@ txt_files = [filename for filename in os.listdir(input_dir) if filename.endswith
 
 # 使用线程池并行处理文件
 with ThreadPoolExecutor() as executor:
-    list(tqdm(executor.map(lambda x: process_file(x, input_dir, output_base_dir), txt_files), total=len(txt_files),
-              desc="Processing files", unit="files"))
+    list(tqdm(executor.map(lambda x: process_file(x, input_dir, output_base_dir), txt_files),
+              total=len(txt_files), desc="Processing files", unit="files"))

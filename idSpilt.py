@@ -34,9 +34,9 @@ def split_file(input_file, output_dir, num_parts):
 
 
 if __name__ == "__main__":
-    source_directory = r'D:\document\bioInfo\liver'
+    source_directory = r'D:\document\bioInfo\gwasID\Osteoarthritis'
     output_directory = os.path.join(source_directory, 'output')
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
     merged_file = merge_txt_files(source_directory, output_directory)
-    split_file(merged_file, output_directory, 6)
+    split_file(merged_file, output_directory, 4)

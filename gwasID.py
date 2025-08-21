@@ -8,8 +8,8 @@ from hashlib import md5
 import random
 
 # change trait and path
-trait="Gallstone"
-path="D:/document/bioInfo/liver/"
+trait="cirrhosis"
+path="D:/document/bioInfo/gwasID/"
 isGwasInfo=False
 
 # params

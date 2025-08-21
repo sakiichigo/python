@@ -1,32 +1,31 @@
 import os
-import shutil
 
-# 定义文件路径
-id_file_path = r'E:\anaFiles\eyeGwas\ma\pheno\gwasinfo\allId.txt'
-source_dir = r'E:\anaFiles\smrBrainEye'
-target_dir = r'E:\anaFiles\smrBrainEye\cataract&glaucoma'
+# 设置目录路径
+directory = r"E:\anaFiles\brain"
 
-# 确保目标目录存在
-if not os.path.exists(target_dir):
-    os.makedirs(target_dir)
+# 确保目录存在
+if not os.path.exists(directory):
+    print(f"错误: 目录 '{directory}' 不存在!")
+    exit()
 
-try:
-    # 读取ID文件
-    with open(id_file_path, 'r') as f:
-        ids = [line.strip() for line in f.readlines()]
+# 获取所有ZIP文件
+zip_files = [f for f in os.listdir(directory) if f.lower().endswith('.zip')]
 
-    # 遍历源目录
-    for root, dirs, files in os.walk(source_dir):
-        for file in files:
-            for id in ids:
-                if id in file:
-                    source_file_path = os.path.join(root, file)
-                    target_file_path = os.path.join(target_dir, file)
-                    # 移动文件
-                    shutil.move(source_file_path, target_file_path)
-                    print(f"Moved {source_file_path} to {target_file_path}")
+# 处理文件名并保存结果
+output_file = os.path.join(directory, "processed_filenames.txt")
 
-except FileNotFoundError:
-    print(f"Error: The file {id_file_path} was not found.")
-except Exception as e:
-    print(f"An unexpected error occurred: {e}")
+with open(output_file, 'w', encoding='utf-8') as f:
+    for zip_file in zip_files:
+        # 移除 .zip 扩展名
+        base_name = os.path.splitext(zip_file)[0]
+
+        # 移除 "Brain" 字符 (不区分大小写)
+        processed_name = base_name.replace("Brain_", "").replace("brain", "").replace("BRAIN", "")
+
+        # 移除所有下划线
+        processed_name = processed_name.replace("_", " ")
+
+        # 写入结果 (包含原始文件名和处理后的文件名)
+        f.write(f"{processed_name}\n")
+
+print(f"处理完成! 结果已保存至: {output_file}")

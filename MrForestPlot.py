@@ -4,7 +4,7 @@ import pandas as pd
 import os
 
 # 读取 Excel 文件
-file_path = r"D:\document\bioInfo\heart-sarco-0330\eqtl\combined_ivw_filtered_selected_2.xlsx"
+file_path = r"D:\document\bioInfo\alps-eye\eqtl\processed_eqtl.xlsx"
 df = pd.read_excel(file_path)
 
 # 提取数据
@@ -76,7 +76,7 @@ plt.grid(False)
 plt.tight_layout()
 
 # 保存图片到指定目录
-save_dir = r"D:\document\bioInfo\heart-sarco-0330\eqtl"
+save_dir = r"D:\document\bioInfo\alps-eye\eqtl"
 os.makedirs(save_dir, exist_ok=True)
 save_path = os.path.join(save_dir, "forest_plot.png")
 plt.savefig(save_path)

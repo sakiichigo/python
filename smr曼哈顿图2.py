@@ -9,17 +9,17 @@ from PIL import Image, ImageDraw, ImageFont
 plt.rcParams['figure.dpi'] = 300
 
 # 读取 Excel 文件
-excel_path = r"D:\document\bioInfo\heart-sarco-0330\smr_restults.xlsx"
+excel_path = r"E:\anaFiles\smrBrainEye\cataractGlaucoma\all_common_genes.xlsx"
 df_excel = pd.read_excel(excel_path)
 id_list = df_excel.columns.tolist()
 
 # 定义 SMR 文件所在目录
-smr_dir = r"E:\sacropeniaGwas\smrResult"
+smr_dir = r"E:\anaFiles\smrBrainEye\cataractGlaucoma"
 
 # 定义保存图片的目录
-save_dir = r"D:\document\bioInfo\heart-sarco-0330\figure\smr"
+save_dir = r"D:\document\bioInfo\alps-eye\figure\smr"
 # 定义保存显著基因的目录
-gene_save_dir = r"D:\document\bioInfo\heart-sarco-0330\smr"
+gene_save_dir = r"D:\document\bioInfo\alps-eye\smr"
 # 检查保存目录是否存在，若不存在则创建
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
@@ -28,20 +28,12 @@ if not os.path.exists(gene_save_dir):
 
 # 定义 id 对应关系
 id_mapping = {
-    "ebi-a-GCST002783": "Body mass index",
-    "ukb-a-248": "Body mass index",
-    "ukb-a-374": "Hand grip strength",
-    "ukb-a-379": "Hand grip strength",
-    "ukb-a-482": "Physical activity",
-    "ukb-a-483": "Physical activity",
-    "ukb-a-484": "Physical activity",
-    "ukb-a-485": "Physical activity",
-    "ukb-a-486": "Physical activity",
-    "ukb-a-487": "Physical activity",
-    "ukb-a-503": "Physical activity",
-    "ukb-a-508": "Physical activity",
-    "ukb-a-511": "Physical activity",
-    "ukb-a-513": "Usual walking Pace"
+    "ebi-a-GCST009722": "glaucoma",
+    "ukb-a-424": "glaucoma",
+    "ukb-a-426": "cataract",
+    "ukb-a-529": "cataract",
+    "ukb-a-530": "cataract",
+    "ukb-a-79": "glaucoma"
 }
 
 # 为 22 个染色体分配不同颜色
@@ -51,7 +43,7 @@ chrom_colors = {i + 1: plt.cm.tab20(i) for i in range(22)}
 for file_name in os.listdir(smr_dir):
     if file_name.endswith('_fdr_corrected.smr'):
         # 提取 id 和 eqtl
-        parts = file_name.split("-Heart_")
+        parts = file_name.split("-Brain_")
         if len(parts) == 2:
             id_value = parts[0]
             eqtl = parts[1].replace("_fdr_corrected.smr", "")
@@ -161,68 +153,64 @@ for file_name in os.listdir(smr_dir):
             gene_save_path = os.path.join(gene_save_dir, f'{pheno}_{eqtl}({id_value})_significant_genes.xlsx')
             significant_df.to_excel(gene_save_path, index=False)
 
-# 图片合并部分
-target_files = [
-    "Body mass index_Atrial_Appendage(ukb-a-248)_manhattan_plot.png",
-    "Body mass index_Left_Ventricle(ukb-a-248)_manhattan_plot.png",
-    "Hand grip strength_Atrial_Appendage(ukb-a-379)_manhattan_plot.png",
-    "Hand grip strength_Left_Ventricle(ukb-a-379)_manhattan_plot.png",
-    "Usual walking Pace_Atrial_Appendage(ukb-a-513)_manhattan_plot.png",
-    "Usual walking Pace_Left_Ventricle(ukb-a-513)_manhattan_plot.png",
-    "Physical activity_Atrial_Appendage(ukb-a-482)_manhattan_plot.png",
-    "Physical activity_Left_Ventricle(ukb-a-482)_manhattan_plot.png"
-]
+if(True):
+    # 图片合并部分
+    target_files = [
+        "glaucoma_Cerebellar_Hemisphere(ebi-a-GCST009722)_manhattan_plot.png",
+        "glaucoma_Cerebellar_Hemisphere(ukb-a-79)_manhattan_plot.png",
+        "glaucoma_Cerebellar_Hemisphere(ukb-a-424)_manhattan_plot.png"
+    ]
 
-atrial_appendage_files = [f for f in target_files if "Atrial_Appendage" in f]
-left_ventricle_files = [f for f in target_files if "Left_Ventricle" in f]
+    atrial_appendage_files = [f for f in target_files if "Atrial_Appendage" in f]
+    left_ventricle_files = [f for f in target_files if "Left_Ventricle" in f]
 
 
-def merge_images_vertically(file_list, output_path, eqtl):
-    images = [Image.open(os.path.join(save_dir, f)) for f in file_list]
-    widths, heights = zip(*(i.size for i in images))
-    max_width = max(widths)
-    total_height = sum(heights)
+    def merge_images_vertically(file_list, output_path, eqtl):
+        images = [Image.open(os.path.join(save_dir, f)) for f in file_list]
+        widths, heights = zip(*(i.size for i in images))
+        max_width = max(widths)
+        total_height = sum(heights)
 
-    new_im = Image.new('RGB', (max_width, total_height))
+        new_im = Image.new('RGB', (max_width, total_height))
 
-    y_offset = 0
-    for im in images:
-        new_width = max_width
-        new_height = int(im.size[1] * (max_width / im.size[0]))  # 按比例调整高度
-        im = im.resize((new_width, new_height), Image.LANCZOS)
-        new_im.paste(im, (0, y_offset))
-        y_offset += new_height
+        y_offset = 0
+        for im in images:
+            new_width = max_width
+            new_height = int(im.size[1] * (max_width / im.size[0]))  # 按比例调整高度
+            im = im.resize((new_width, new_height), Image.LANCZOS)
+            new_im.paste(im, (0, y_offset))
+            y_offset += new_height
 
-    # 把下划线替换成空格
-    eqtl = eqtl.replace("_", " ")
-    # 根据图片尺寸比率设置字体大小，进一步缩小字体
-    font_size = int(max_width / 40)
-    draw = ImageDraw.Draw(new_im)
-    try:
-        font = ImageFont.truetype("arialbd.ttf", font_size)
-    except OSError:
-        print("无法找到 arialbd.ttf 字体文件，将使用默认字体。")
-        font = ImageFont.load_default()
+        # 把下划线替换成空格
+        eqtl = eqtl.replace("_", " ")
+        # 根据图片尺寸比率设置字体大小，进一步缩小字体
+        font_size = int(max_width / 40)
+        draw = ImageDraw.Draw(new_im)
+        try:
+            font = ImageFont.truetype("arialbd.ttf", font_size)
+        except OSError:
+            print("无法找到 arialbd.ttf 字体文件，将使用默认字体。")
+            font = ImageFont.load_default()
 
-    # 计算文本的宽度和高度
-    _, _, text_width, text_height = draw.textbbox((0, 0), eqtl.upper(), font=font)
-    # 调整文本位置，避免盖住原图片内容，并让文本上移
-    x = 10
-    y = 5
-    if x + text_width > max_width:
-        x = max_width - text_width - 10
-    if y + text_height > total_height:
-        y = total_height - text_height - 10
+        # 计算文本的宽度和高度
+        _, _, text_width, text_height = draw.textbbox((0, 0), eqtl.upper(), font=font)
+        # 调整文本位置，避免盖住原图片内容，并让文本上移
+        x = 10
+        y = 5
+        if x + text_width > max_width:
+            x = max_width - text_width - 10
+        if y + text_height > total_height:
+            y = total_height - text_height - 10
 
-    draw.text((x, y), eqtl.upper(), font=font, fill=(0, 0, 0))
+        draw.text((x, y), eqtl.upper(), font=font, fill=(0, 0, 0))
 
-    new_im.save(output_path)
+        new_im.save(output_path)
 
 
-# 合并 Atrial_Appendage 组图片
-atrial_appendage_output = os.path.join(save_dir, "Atrial_Appendage_combined.png")
-merge_images_vertically(atrial_appendage_files, atrial_appendage_output, "Atrial_Appendage")
+    # 合并 Atrial_Appendage 组图片
+    atrial_appendage_output = os.path.join(save_dir, "Atrial_Appendage_combined.png")
+    merge_images_vertically(atrial_appendage_files, atrial_appendage_output, "Atrial_Appendage")
 
-# 合并 Left_Ventricle 组图片
-left_ventricle_output = os.path.join(save_dir, "Left_Ventricle_combined.png")
-merge_images_vertically(left_ventricle_files, left_ventricle_output, "Left_Ventricle")
+    # 合并 Left_Ventricle 组图片
+    left_ventricle_output = os.path.join(save_dir, "Left_Ventricle_combined.png")
+    merge_images_vertically(left_ventricle_files, left_ventricle_output, "Left_Ventricle")

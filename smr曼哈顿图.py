@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 import numpy as np
+from PIL import Image, ImageDraw, ImageFont
 
 # 设置图片清晰度
 plt.rcParams['figure.dpi'] = 300
@@ -92,7 +93,6 @@ for file_name in os.listdir(smr_dir):
                                 color=chrom_colors[chrom], s=10)
 
             # 设置标题和坐标轴标签
-            plt.title(f'SMR Manhattan Plot for {pheno} - {eqtl}')
             plt.xlabel('Chromosome Number')
             # 设置 x 轴刻度
             xticks = list(range(1, 23))
@@ -148,6 +148,9 @@ for file_name in os.listdir(smr_dir):
             ax.spines['bottom'].set_bounds(x_min, x_max)
             ax.tick_params(axis='x', direction='in')
 
+            # 将标题放在左上角
+            plt.text(0.02, 0.95, pheno, transform=plt.gca().transAxes, fontsize=12, va='top')
+
             # 保存图片
             save_path = os.path.join(save_dir, f'{pheno}_{eqtl}({id_value})_manhattan_plot.png')
             plt.tight_layout()
@@ -157,3 +160,69 @@ for file_name in os.listdir(smr_dir):
             # 保存显著基因到 xlsx 文件
             gene_save_path = os.path.join(gene_save_dir, f'{pheno}_{eqtl}({id_value})_significant_genes.xlsx')
             significant_df.to_excel(gene_save_path, index=False)
+
+# 图片合并部分
+target_files = [
+    "Body mass index_Atrial_Appendage(ukb-a-248)_manhattan_plot.png",
+    "Body mass index_Left_Ventricle(ukb-a-248)_manhattan_plot.png",
+    "Hand grip strength_Atrial_Appendage(ukb-a-379)_manhattan_plot.png",
+    "Hand grip strength_Left_Ventricle(ukb-a-379)_manhattan_plot.png",
+    "Usual walking Pace_Atrial_Appendage(ukb-a-513)_manhattan_plot.png",
+    "Usual walking Pace_Left_Ventricle(ukb-a-513)_manhattan_plot.png",
+    "Physical activity_Atrial_Appendage(ukb-a-482)_manhattan_plot.png",
+    "Physical activity_Left_Ventricle(ukb-a-482)_manhattan_plot.png"
+]
+
+atrial_appendage_files = [f for f in target_files if "Atrial_Appendage" in f]
+left_ventricle_files = [f for f in target_files if "Left_Ventricle" in f]
+
+
+def merge_images_vertically(file_list, output_path, eqtl):
+    images = [Image.open(os.path.join(save_dir, f)) for f in file_list]
+    widths, heights = zip(*(i.size for i in images))
+    max_width = max(widths)
+    total_height = sum(heights)
+
+    new_im = Image.new('RGB', (max_width, total_height))
+
+    y_offset = 0
+    for im in images:
+        new_width = max_width
+        new_height = int(im.size[1] * (max_width / im.size[0]))  # 按比例调整高度
+        im = im.resize((new_width, new_height), Image.LANCZOS)
+        new_im.paste(im, (0, y_offset))
+        y_offset += new_height
+
+    # 把下划线替换成空格
+    eqtl = eqtl.replace("_", " ")
+    # 根据图片尺寸比率设置字体大小，进一步缩小字体
+    font_size = int(max_width / 40)
+    draw = ImageDraw.Draw(new_im)
+    try:
+        font = ImageFont.truetype("arialbd.ttf", font_size)
+    except OSError:
+        print("无法找到 arialbd.ttf 字体文件，将使用默认字体。")
+        font = ImageFont.load_default()
+
+    # 计算文本的宽度和高度
+    _, _, text_width, text_height = draw.textbbox((0, 0), eqtl.upper(), font=font)
+    # 调整文本位置，避免盖住原图片内容，并让文本上移
+    x = 10
+    y = 5
+    if x + text_width > max_width:
+        x = max_width - text_width - 10
+    if y + text_height > total_height:
+        y = total_height - text_height - 10
+
+    draw.text((x, y), eqtl.upper(), font=font, fill=(0, 0, 0))
+
+    new_im.save(output_path)
+
+
+# 合并 Atrial_Appendage 组图片
+atrial_appendage_output = os.path.join(save_dir, "Atrial_Appendage_combined.png")
+merge_images_vertically(atrial_appendage_files, atrial_appendage_output, "Atrial_Appendage")
+
+# 合并 Left_Ventricle 组图片
+left_ventricle_output = os.path.join(save_dir, "Left_Ventricle_combined.png")
+merge_images_vertically(left_ventricle_files, left_ventricle_output, "Left_Ventricle")

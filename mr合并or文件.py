@@ -10,12 +10,13 @@ import time
 # 保存筛选后的 DataFrame 为 XLSX 文件
 # 指定 CSV 文件所在的目录
 
-directory = r"D:\document\bioInfo\alps-eye\eqtl\result"
+directory = r"D:\document\bioInfo\liver-cirrhosis\result\or"
 
-ivw_output_file = r"D:\document\bioInfo\alps-eye\eqtl\combined_ivw.xlsx"
+ivw_output_file = r"D:\document\bioInfo\liver-cirrhosis\combined_ivw.xlsx"
 
 # 保存合并后的 DataFrame 为一个新的 CSV 文件
-output_file = r"D:\document\bioInfo\alps-eye\eqtl\\combined.csv"
+output_file = r"D:\document\bioInfo\liver-cirrhosis\combined.csv"
+
 
 
 # 定义一个函数来读取单个 CSV 文件
